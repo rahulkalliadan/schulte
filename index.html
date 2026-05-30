@@ -12,7 +12,7 @@
 :root {
   --bg: #0a0a0f;
   --surface: #111118;
-  --surface2: #1a1a24;
+  --surface2: #f0ede6;
   --accent: #c8f060;
   --accent-dim: rgba(200,240,96,0.12);
   --text: #f0eee8;
@@ -321,11 +321,11 @@ body::before {
   align-items: center;
   justify-content: center;
   background: var(--surface2);
-  border: 1px solid var(--cell-border);
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 7px;
   font-family: 'DM Mono', monospace;
-  font-weight: 500;
-  color: var(--text);
+  font-weight: 700;
+  color: #111;
   cursor: pointer;
   transition: background 0.1s, border-color 0.1s, transform 0.08s, color 0.1s;
   user-select: none;
@@ -343,8 +343,8 @@ body::before {
 
 .cell.found {
   background: var(--cell-correct);
-  border-color: rgba(200,240,96,0.45);
-  color: var(--accent);
+  border-color: rgba(200,240,96,0.6);
+  color: #2a4a00;
   cursor: default;
   animation: pop 0.18s ease-out;
 }
@@ -693,7 +693,7 @@ function buildGrid() {
   grid.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
 
   // Font size: scale with grid size
-  const fontSize = Math.max(10, Math.min(20, Math.floor(80 / gridSize))) + 'px';
+  const fontSize = Math.max(12, Math.min(26, Math.floor(110 / gridSize))) + 'px';
 
   const numbers = shuffle([...Array(totalCells)].map((_, i) => i + 1));
 
