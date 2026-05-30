@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Schulte — Focus Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface2: #1a1a24;
+  --accent: #c8f060;
+  --accent-dim: rgba(200,240,96,0.12);
+  --text: #f0eee8;
+  --text-dim: #888;
+  --danger: #ff4d6d;
+  --danger-dim: rgba(255,77,109,0.15);
+  --cell-border: rgba(255,255,255,0.07);
+  --cell-hover: rgba(200,240,96,0.08);
+  --cell-correct: rgba(200,240,96,0.18);
+  --r: 10px;
+}
+
+html {
+  height: 100%;
+  height: 100dvh;
+}
+
+body {
+  height: 100%;
+  height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(200,240,96,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,240,96,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── SCREENS ── */
+.screen {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+}
+
+.screen.hidden { display: none; }
+
+/* ── START SCREEN ── */
+#startScreen {
+  padding: 24px 20px;
+  overflow-y: auto;
+}
+
+.start-inner {
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.start-title {
+  font-size: clamp(40px, 9vw, 68px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -2px;
+  margin-bottom: 12px;
+}
+
+.start-title .accent { color: var(--accent); }
+
+.start-sub {
+  font-size: clamp(13px, 2vw, 15px);
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.how-to {
+  background: var(--surface);
+  border: 1px solid var(--cell-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.how-to h3 {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.how-to-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.how-to-item:last-child { margin-bottom: 0; }
+
+.how-to-num {
+  min-width: 20px;
+  height: 20px;
+  background: var(--accent-dim);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.level-select-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border: 1px solid var(--cell-border);
+  border-radius: var(--r);
+  padding: 10px 16px;
+}
+
+.level-select-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.level-select-row input[type="number"] {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--cell-border);
+  border-radius: 6px;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 17px;
+  font-weight: 500;
+  padding: 5px 10px;
+  text-align: center;
+  outline: none;
+  max-width: 90px;
+}
+
+.level-select-row input:focus { border-color: rgba(200,240,96,0.4); }
+
+/* ── GAME SCREEN ── */
+#gameScreen {
+  padding: 12px 14px 12px;
+  justify-content: flex-start;
+  gap: 0;
+}
+
+.game-inner {
+  width: 100%;
+  max-width: 560px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 4px 0 10px;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.logo span { color: var(--accent); }
+
+.level-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.level-badge strong { color: var(--accent); font-weight: 500; }
+
+.stats {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-bottom: 8px;
+}
+
+.stat-card {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--cell-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 2px;
+}
+
+.stat-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1;
+}
+
+.stat-value.timer-danger { color: var(--danger); }
+.stat-value.timer-warning { color: #ffa94d; }
+
+.progress-wrap {
+  height: 2px;
+  background: var(--surface2);
+  border-radius: 2px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.target-hint {
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+.target-hint strong {
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Grid area — takes all remaining space */
+.grid-wrap {
+  flex: 1;
+  min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--cell-border);
+  border-radius: 14px;
+  padding: 8px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.grid {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  height: 100%;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface2);
+  border: 1px solid var(--cell-border);
+  border-radius: 7px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, transform 0.08s, color 0.1s;
+  user-select: none;
+  -webkit-user-select: none;
+  /* font size set dynamically by JS */
+}
+
+.cell:hover:not(.found):not(.locked) {
+  background: var(--cell-hover);
+  border-color: rgba(200,240,96,0.3);
+  transform: scale(1.05);
+}
+
+.cell:active:not(.found):not(.locked) { transform: scale(0.95); }
+
+.cell.found {
+  background: var(--cell-correct);
+  border-color: rgba(200,240,96,0.45);
+  color: var(--accent);
+  cursor: default;
+  animation: pop 0.18s ease-out;
+}
+
+.cell.wrong-flash {
+  background: var(--danger-dim);
+  border-color: rgba(255,77,109,0.4);
+  color: var(--danger);
+}
+
+.cell.locked { cursor: default; opacity: 0.35; }
+
+/* Action button area */
+#actionBtns {
+  flex-shrink: 0;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 24px;
+  border-radius: var(--r);
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.1s, opacity 0.15s;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary { background: var(--accent); color: #0a0a0f; }
+.btn-primary:hover { opacity: 0.9; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--cell-border);
+}
+
+.btn-secondary:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+/* ── OVERLAYS ── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,10,15,0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  gap: 6px;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+
+.overlay-icon { font-size: 40px; line-height: 1; margin-bottom: 6px; }
+.overlay-title { font-size: 22px; font-weight: 800; color: var(--text); }
+
+.overlay-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  max-width: 220px;
+  line-height: 1.6;
+}
+
+/* ── WIN SCREEN ── */
+#winScreen { padding: 24px 20px; }
+
+.win-inner {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.win-number {
+  font-size: 72px;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -3px;
+}
+
+.win-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.win-stats {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin: 12px 0;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.flicker { animation: flicker 0.6s ease-in-out infinite; }
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.shake { animation: shake 0.22s ease-in-out; }
+
+.hidden { display: none !important; }
+
+/* ── CONFETTI ── */
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  animation: fall 1.2s ease-in forwards;
+}
+
+@keyframes fall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- START SCREEN -->
+<div id="startScreen" class="screen">
+  <div class="start-inner">
+    <div class="start-title">Schulte<br><span class="accent">Focus.</span></div>
+    <p class="start-sub">Train your peripheral vision and improve reading speed by finding numbers in sequence — as fast as you can.</p>
+
+    <div class="how-to">
+      <h3>How to play</h3>
+      <div class="how-to-item">
+        <span class="how-to-num">1</span>
+        <span>Find and tap numbers <strong style="color:var(--text)">1, 2, 3…</strong> in order from the shuffled grid.</span>
+      </div>
+      <div class="how-to-item">
+        <span class="how-to-num">2</span>
+        <span>Timer is n² seconds — <strong style="color:var(--text)">5×5 = 25s</strong>, <strong style="color:var(--text)">6×6 = 36s</strong>, and so on.</span>
+      </div>
+      <div class="how-to-item">
+        <span class="how-to-num">3</span>
+        <span>Grid grows every 10 levels: 5×5 → 6×6 → 7×7 … up to level 1000.</span>
+      </div>
+      <div class="how-to-item">
+        <span class="how-to-num">4</span>
+        <span>Time runs out → game over. Find all numbers → next level!</span>
+      </div>
+    </div>
+
+    <div class="level-select-row">
+      <span class="level-select-label">Start at level</span>
+      <input type="number" id="startLevelInput" min="1" max="1000" value="1">
+      <span class="level-select-label" style="font-size:10px;">/ 1000</span>
+    </div>
+
+    <button class="btn btn-primary" onclick="startGame()">Begin Training ↗</button>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="screen hidden">
+  <div class="game-inner">
+    <div class="header">
+      <div class="logo">Schulte<span>.</span></div>
+      <div class="level-badge">Level <strong id="levelNum">1</strong> / 1000</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Time</div>
+        <div class="stat-value" id="timerDisplay">25</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Grid</div>
+        <div class="stat-value" id="gridSizeDisplay">5×5</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Found</div>
+        <div class="stat-value" id="foundDisplay">0/25</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progressBar" style="width:0%"></div>
+    </div>
+
+    <div class="target-hint" id="targetHint">Find → <strong>1</strong></div>
+
+    <div class="grid-wrap">
+      <div class="grid" id="grid"></div>
+
+      <div class="overlay hidden" id="overlayGameOver">
+        <div class="overlay-icon">⏱</div>
+        <div class="overlay-title">Time's up</div>
+        <div class="overlay-sub" id="gameOverSub">You found 0 of 25 numbers.</div>
+      </div>
+
+      <div class="overlay hidden" id="overlayWin">
+        <div class="overlay-icon">✦</div>
+        <div class="overlay-title">Level clear</div>
+        <div class="overlay-sub" id="winSub">Next level loading…</div>
+      </div>
+
+      <div class="overlay hidden" id="overlayReady">
+        <div class="overlay-icon">👁</div>
+        <div class="overlay-title">Ready?</div>
+        <div class="overlay-sub">Fix your gaze at the center.<br>Use your peripheral vision.</div>
+      </div>
+    </div>
+
+    <div id="actionBtns">
+      <button class="btn btn-primary hidden" id="btnNextLevel" onclick="nextLevel()">Next Level →</button>
+      <button class="btn btn-primary hidden" id="btnRestart" onclick="restartLevel()">Try Again</button>
+      <button class="btn btn-secondary" id="btnStartTimer" onclick="beginLevel()">Start Timer</button>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL WIN SCREEN -->
+<div id="winScreen" class="screen hidden">
+  <div class="win-inner">
+    <div class="win-number">1000</div>
+    <div class="win-label">Levels mastered</div>
+    <p class="start-sub" style="margin-bottom:0">You've completed every level. Extraordinary focus.</p>
+    <div class="win-stats">
+      <div class="stat-card"><div class="stat-label">Final level</div><div class="stat-value" style="color:var(--accent)">1000</div></div>
+      <div class="stat-card"><div class="stat-label">Grid</div><div class="stat-value">104×104</div></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="resetAll()">Play Again</button>
+  </div>
+</div>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+let currentLevel = 1;
+let gridSize = 5;
+let totalTime = 25;
+let timeLeft = 25;
+let nextTarget = 1;
+let totalCells = 25;
+let foundCount = 0;
+let timerInterval = null;
+let gameActive = false;
+
+function getGridSize(level) {
+  return Math.floor((level - 1) / 10) + 5;
+}
+
+function getTime(n) { return n * n; }
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+function startGame() {
+  const input = document.getElementById('startLevelInput');
+  currentLevel = Math.max(1, Math.min(1000, parseInt(input.value) || 1));
+  hide('startScreen');
+  show('gameScreen');
+  loadLevel(currentLevel);
+}
+
+function resetAll() {
+  currentLevel = 1;
+  hide('winScreen');
+  show('startScreen');
+}
+
+function loadLevel(level) {
+  clearInterval(timerInterval);
+  gameActive = false;
+
+  gridSize = getGridSize(level);
+  totalTime = getTime(gridSize);
+  timeLeft = totalTime;
+  nextTarget = 1;
+  totalCells = gridSize * gridSize;
+  foundCount = 0;
+
+  document.getElementById('levelNum').textContent = level;
+  document.getElementById('gridSizeDisplay').textContent = gridSize + '×' + gridSize;
+  document.getElementById('foundDisplay').textContent = '0/' + totalCells;
+  document.getElementById('progressBar').style.width = '0%';
+  updateTimerDisplay();
+  updateTargetHint();
+
+  hide('btnNextLevel');
+  hide('btnRestart');
+  show('btnStartTimer');
+  hide('overlayGameOver');
+  hide('overlayWin');
+  show('overlayReady');
+
+  buildGrid();
+}
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+  grid.style.gridTemplateRows = `repeat(${gridSize}, 1fr)`;
+
+  // Font size: scale with grid size
+  const fontSize = Math.max(10, Math.min(20, Math.floor(80 / gridSize))) + 'px';
+
+  const numbers = shuffle([...Array(totalCells)].map((_, i) => i + 1));
+
+  numbers.forEach(num => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.textContent = num;
+    cell.dataset.num = num;
+    cell.style.fontSize = fontSize;
+    cell.addEventListener('click', () => handleCellClick(cell, num));
+    grid.appendChild(cell);
+  });
+}
+
+function beginLevel() {
+  hide('overlayReady');
+  hide('btnStartTimer');
+  gameActive = true;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      gameOver();
+    }
+  }, 1000);
+}
+
+function handleCellClick(cell, num) {
+  if (!gameActive) return;
+  if (cell.classList.contains('found')) return;
+
+  if (num === nextTarget) {
+    cell.classList.add('found');
+    foundCount++;
+    nextTarget++;
+    document.getElementById('foundDisplay').textContent = foundCount + '/' + totalCells;
+    document.getElementById('progressBar').style.width = (foundCount / totalCells * 100) + '%';
+    updateTargetHint();
+    if (foundCount === totalCells) levelWon();
+  } else {
+    cell.classList.add('wrong-flash');
+    document.getElementById('grid').classList.add('shake');
+    setTimeout(() => {
+      cell.classList.remove('wrong-flash');
+      document.getElementById('grid').classList.remove('shake');
+    }, 260);
+  }
+}
+
+function updateTimerDisplay() {
+  const el = document.getElementById('timerDisplay');
+  el.textContent = timeLeft;
+  el.className = 'stat-value';
+  const ratio = timeLeft / totalTime;
+  if (ratio <= 0.2) el.classList.add('timer-danger', 'flicker');
+  else if (ratio <= 0.4) el.classList.add('timer-warning');
+}
+
+function updateTargetHint() {
+  const hint = document.getElementById('targetHint');
+  if (nextTarget > totalCells) {
+    hint.innerHTML = 'All found!';
+  } else {
+    hint.innerHTML = `Find → <strong>${nextTarget}</strong>`;
+  }
+}
+
+function gameOver() {
+  gameActive = false;
+  document.querySelectorAll('.cell:not(.found)').forEach(c => c.classList.add('locked'));
+  document.getElementById('gameOverSub').textContent =
+    `You found ${foundCount} of ${totalCells} numbers.`;
+  show('overlayGameOver');
+  hide('btnStartTimer');
+  show('btnRestart');
+}
+
+function restartLevel() { loadLevel(currentLevel); }
+
+function levelWon() {
+  clearInterval(timerInterval);
+  gameActive = false;
+  const timeUsed = totalTime - timeLeft;
+  document.getElementById('winSub').textContent =
+    `Done in ${timeUsed}s · ${timeLeft}s remaining.`;
+  show('overlayWin');
+  hide('btnStartTimer');
+  fireConfetti();
+
+  if (currentLevel >= 1000) {
+    setTimeout(() => { hide('gameScreen'); show('winScreen'); }, 2000);
+  } else {
+    setTimeout(() => { show('btnNextLevel'); hide('overlayWin'); }, 1200);
+  }
+}
+
+function nextLevel() {
+  currentLevel++;
+  hide('btnNextLevel');
+  loadLevel(currentLevel);
+}
+
+function fireConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = ['#c8f060', '#ffa94d', '#74c0fc', '#ff6b9d', '#a9e34b'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = '-10px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = Math.random() * 0.6 + 's';
+    piece.style.animationDuration = (0.8 + Math.random() * 0.8) + 's';
+    container.appendChild(piece);
+    setTimeout(() => piece.remove(), 2000);
+  }
+}
+</script>
+</body>
+</html>
