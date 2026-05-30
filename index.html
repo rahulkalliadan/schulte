@@ -519,7 +519,7 @@ body::before {
       </div>
       <div class="how-to-item">
         <span class="how-to-num">2</span>
-        <span>Timer is n² seconds — <strong style="color:var(--text)">5×5 = 25s</strong>, <strong style="color:var(--text)">6×6 = 36s</strong>, and so on.</span>
+        <span>Timer rounds up to the nearest 10s — <strong style="color:var(--text)">5×5 = 30s</strong>, <strong style="color:var(--text)">6×6 = 50s</strong>, and so on.</span>
       </div>
       <div class="how-to-item">
         <span class="how-to-num">3</span>
@@ -631,7 +631,7 @@ function getGridSize(level) {
   return Math.floor((level - 1) / 10) + 5;
 }
 
-function getTime(n) { return n * n; }
+function getTime(n) { return Math.ceil((n * n + n) / 10) * 10; }
 
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
